@@ -11,6 +11,13 @@ export interface ResumeData {
   originalText: string;
 }
 
+export interface JobContext {
+  title?: string;
+  company?: string;
+  description: string;
+  url: string;
+}
+
 export interface TailoredResume {
   fullName?: string; // Optional because legacy data might not have it
   contactInfo: {

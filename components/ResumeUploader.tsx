@@ -8,9 +8,6 @@ import { ResumeData } from '../types';
 const pdfjs = (pdfjsLib as any).default || pdfjsLib;
 
 // Set the worker source for pdfjs
-// We use the CDNJS version (classic script) instead of esm.sh (module) for the worker 
-// because standard Workers in browsers often struggle with Cross-Origin Module scripts via importScripts.
-// Set the worker source for pdfjs to the local file in public folder
 if (pdfjs && pdfjs.GlobalWorkerOptions) {
   pdfjs.GlobalWorkerOptions.workerSrc = chrome.runtime.getURL('pdf.worker.min.js');
 }
@@ -81,51 +78,47 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onNext, initialData }) 
   const isValid = text.length > 50;
 
   return (
-    <div className="flex flex-col h-full p-6 animate-fade-in">
-      <h2 className="text-2xl font-bold text-slate-800 mb-2">Upload Resume</h2>
-      <p className="text-slate-500 mb-6">We support PDF and Text files.</p>
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Upload Resume</h2>
+      <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>We support PDF and Text files.</p>
 
-      <div className="space-y-4 flex-1 overflow-y-auto">
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">
+      <div style={{ flex: 1, overflowY: 'auto' }}>
+        <div className="input-group">
+          <label className="input-label">
             Resume Content
-            {isParsing && <span className="ml-2 text-blue-600 text-xs font-semibold animate-pulse">Extracting text...</span>}
+            {isParsing && <span style={{ marginLeft: '1rem', color: 'var(--primary)', fontSize: '0.8rem' }}>Extracting text...</span>}
           </label>
           <textarea
-            className="w-full h-64 p-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none resize-none font-mono text-xs"
+            className="input-field textarea-field"
+            style={{ minHeight: '180px', fontFamily: 'monospace', fontSize: '12px' }}
             placeholder="Paste your resume content here or upload a file..."
             value={text}
             onChange={(e) => setText(e.target.value)}
           />
         </div>
 
-        <div className="flex items-center gap-2">
-          <div className="h-px bg-slate-200 flex-1"></div>
-          <span className="text-xs text-slate-400">OR UPLOAD PDF/TXT</span>
-          <div className="h-px bg-slate-200 flex-1"></div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', margin: '1rem 0' }}>
+          <div style={{ height: '1px', background: 'var(--border)', flex: 1 }}></div>
+          <span style={{ fontSize: '10px', color: 'var(--text-muted)' }}>OR UPLOAD PDF/TXT</span>
+          <div style={{ height: '1px', background: 'var(--border)', flex: 1 }}></div>
         </div>
 
-        <input
-          type="file"
-          accept=".pdf,.txt,.md"
-          onChange={handleFileChange}
-          className="block w-full text-sm text-slate-500
-              file:mr-4 file:py-2 file:px-4
-              file:rounded-full file:border-0
-              file:text-sm file:font-semibold
-              file:bg-blue-50 file:text-blue-700
-              hover:file:bg-blue-100"
-        />
+        <div className="input-group">
+          <input
+            type="file"
+            accept=".pdf,.txt,.md"
+            onChange={handleFileChange}
+            className="input-field"
+            style={{ padding: '0.5rem' }}
+          />
+        </div>
       </div>
 
-      <div className="pt-4 mt-4 border-t border-slate-200">
+      <div style={{ paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
         <button
           onClick={() => onNext(text)}
           disabled={!isValid || isParsing}
-          className={`w-full py-3 rounded-xl font-semibold transition-all ${isValid && !isParsing
-              ? 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-blue-500/30'
-              : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-            }`}
+          className="btn btn-primary"
         >
           {isValid ? "Save & Next" : "Enter Content to Continue"}
         </button>

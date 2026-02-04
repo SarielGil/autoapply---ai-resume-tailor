@@ -12,6 +12,7 @@ const App: React.FC = () => {
   const [resumeData, setResumeData] = useState<ResumeData | null>(null);
   const [tailoredData, setTailoredData] = useState<TailoredResume | null>(null);
   const [targetJobTitle, setTargetJobTitle] = useState<string>('');
+  const [targetCompany, setTargetCompany] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
   const [apiKeyInput, setApiKeyInput] = useState('');
 
@@ -87,12 +88,13 @@ const App: React.FC = () => {
     setStep(AppStep.JOB_CONTEXT);
   };
 
-  const handleAnalyze = async (jd: string, title?: string) => {
+  const handleAnalyze = async (jd: string, title?: string, company?: string) => {
     if (!resumeData) return;
 
     setStep(AppStep.PROCESSING);
     setError(null);
     if (title) setTargetJobTitle(title);
+    if (company) setTargetCompany(company);
 
     try {
       const result = await tailorResume(resumeData.originalText, jd);
@@ -105,8 +107,6 @@ const App: React.FC = () => {
     } catch (err) {
       console.error(err);
       setError("Failed to tailor resume. Please check your API key.");
-      // Optional: Allow resetting key if it fails
-      // setStep(AppStep.API_KEY_SETUP); 
       setStep(AppStep.JOB_CONTEXT);
     }
   };
@@ -120,106 +120,98 @@ const App: React.FC = () => {
   // Views
   if (step === AppStep.PROCESSING) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-50 px-6">
-        <div className="text-center">
-          <div className="relative w-20 h-20 mx-auto mb-6">
-            <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-200 rounded-full"></div>
-            <div className="absolute top-0 left-0 w-full h-full border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
-            <div className="absolute inset-0 flex items-center justify-center">
-              <svg className="w-8 h-8 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-            </div>
-          </div>
-          <h2 className="text-xl font-bold text-slate-800 mb-2">Tailoring your Resume...</h2>
-          <p className="text-slate-500">Gemini is analyzing the job description...</p>
-        </div>
+      <div className="app-container" style={{ justifyContent: 'center', alignItems: 'center', textAlign: 'center' }}>
+        <div className="spinner" style={{ width: '40px', height: '40px', borderWidth: '4px', marginBottom: '1rem' }}></div>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>Tailoring Resume...</h2>
+        <p style={{ color: 'var(--text-muted)' }}>Gemini is analyzing the job description...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center py-0 sm:py-8">
-      <div className="w-full max-w-md h-[100vh] sm:h-[600px] bg-white sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col relative">
-
-        {/* Header */}
-        <div className="bg-white border-b border-slate-100 p-4 flex items-center gap-3">
-          <div className="bg-blue-600 rounded-lg p-2">
-            <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+    <div className="app-container">
+      {/* Header */}
+      <header className="header">
+        <div className="header-title">
+          <div className="brand-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
           </div>
           <div>
-            <h1 className="font-bold text-slate-900 leading-tight">AutoApply</h1>
-            <p className="text-[10px] font-bold text-blue-600 tracking-wider uppercase">Extension Beta</p>
-          </div>
-          {/* Small Settings Icon to Reset Key if needed */}
-          <div className="ml-auto">
-            <button
-              onClick={() => setStep(AppStep.API_KEY_SETUP)}
-              className="text-slate-400 hover:text-blue-600 p-1"
-              title="Settings"
-            >
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-            </button>
+            <h1 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>AutoApply</h1>
+            <p style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Beta</p>
           </div>
         </div>
+        <button
+          onClick={() => setStep(AppStep.API_KEY_SETUP)}
+          className="btn"
+          style={{ width: 'auto', padding: '0.5rem', background: 'transparent', color: 'var(--text-muted)' }}
+          title="Settings"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+        </button>
+      </header>
 
-        <main className="flex-1 overflow-hidden relative">
-          {error && (
-            <div className="absolute top-4 left-4 right-4 bg-red-50 border border-red-200 text-red-700 p-3 rounded-lg text-sm z-50">
-              {error}
-            </div>
-          )}
+      <main className="main-content">
+        {error && (
+          <div style={{ background: '#fef2f2', color: '#b91c1c', padding: '1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', border: '1px solid #fecaca' }}>
+            {error}
+          </div>
+        )}
 
-          {step === AppStep.API_KEY_SETUP && (
-            <div className="p-6 h-full flex flex-col justify-center">
-              <h2 className="text-xl font-bold text-slate-800 mb-2">Welcome!</h2>
-              <p className="text-slate-600 mb-6 text-sm">To use AutoApply, please enter your Google Gemini API Key. It will be stored securely in your browser.</p>
+        {step === AppStep.API_KEY_SETUP && (
+          <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Welcome!</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: '1.5' }}>To use AutoApply, please enter your Google Gemini API Key. It is stored securely in your browser.</p>
 
-              <label className="block text-xs font-bold text-slate-500 uppercase tracking-wide mb-2">Gemini API Key</label>
+            <div className="input-group">
+              <label className="input-label">Gemini API Key</label>
               <input
                 type="password"
                 value={apiKeyInput}
                 onChange={(e) => setApiKeyInput(e.target.value)}
                 placeholder="AIzaSy..."
-                className="w-full p-3 border border-slate-300 rounded-xl mb-4 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                className="input-field"
               />
-
-              <button
-                onClick={handleSaveApiKey}
-                disabled={!apiKeyInput}
-                className="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-blue-200"
-              >
-                Save & Continue
-              </button>
-
-              <p className="mt-6 text-xs text-center text-slate-400">
-                Don't have a key? <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" className="text-blue-500 underline">Get one here</a>
-              </p>
             </div>
-          )}
 
-          {step === AppStep.UPLOAD_RESUME && (
-            <ResumeUploader
-              onNext={handleResumeNext}
-              initialData={resumeData}
-            />
-          )}
+            <button
+              onClick={handleSaveApiKey}
+              disabled={!apiKeyInput}
+              className="btn btn-primary"
+            >
+              Save & Start
+            </button>
 
-          {step === AppStep.JOB_CONTEXT && (
-            <JobContextInput
-              onAnalyze={handleAnalyze}
-              onBack={() => setStep(AppStep.UPLOAD_RESUME)}
-            />
-          )}
+            <p style={{ marginTop: '1.5rem', fontSize: '0.8rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+              Don't have a key? <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noreferrer" style={{ color: 'var(--primary)', textDecoration: 'none' }}>Get one here</a>
+            </p>
+          </div>
+        )}
 
-          {step === AppStep.PREVIEW && tailoredData && resumeData && (
-            <PreviewResult
-              data={tailoredData}
-              fullName={resumeData.fullName}
-              jobTitle={targetJobTitle}
-              onReset={handleReset}
-            />
-          )}
-        </main>
-      </div>
+        {step === AppStep.UPLOAD_RESUME && (
+          <ResumeUploader
+            onNext={handleResumeNext}
+            initialData={resumeData}
+          />
+        )}
+
+        {step === AppStep.JOB_CONTEXT && (
+          <JobContextInput
+            onAnalyze={handleAnalyze}
+            onBack={() => setStep(AppStep.UPLOAD_RESUME)}
+          />
+        )}
+
+        {step === AppStep.PREVIEW && tailoredData && resumeData && (
+          <PreviewResult
+            data={tailoredData}
+            fullName={resumeData.fullName}
+            jobTitle={targetJobTitle}
+            companyName={targetCompany}
+            onReset={handleReset}
+          />
+        )}
+      </main>
     </div>
   );
 };

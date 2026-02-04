@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 
 interface JobContextInputProps {
-  onAnalyze: (jd: string, title?: string) => void;
+  onAnalyze: (jd: string, title?: string, company?: string) => void;
   onBack: () => void;
 }
 
 const JobContextInput: React.FC<JobContextInputProps> = ({ onAnalyze, onBack }) => {
   const [jd, setJd] = useState('');
   const [jobTitle, setJobTitle] = useState('');
+  const [companyName, setCompanyName] = useState('');
   const [scanning, setScanning] = useState(true);
   const [detected, setDetected] = useState(false);
 
@@ -35,6 +36,7 @@ const JobContextInput: React.FC<JobContextInputProps> = ({ onAnalyze, onBack }) 
               if (response.description) {
                 setJd(response.description);
                 if (response.title) setJobTitle(response.title);
+                if (response.company) setCompanyName(response.company);
                 setDetected(true);
               }
             }
@@ -55,47 +57,58 @@ const JobContextInput: React.FC<JobContextInputProps> = ({ onAnalyze, onBack }) 
   const isValid = jd.length > 20;
 
   return (
-    <div className="flex flex-col h-full p-6 animate-fade-in">
-      <div className="flex items-center justify-between mb-6">
-        <button onClick={onBack} className="text-slate-400 hover:text-slate-600">
+    <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+        <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0 }}>
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m15 18-6-6 6-6" /></svg>
         </button>
-        <h2 className="text-xl font-bold text-slate-800">Job Context</h2>
-        <div className="w-6"></div>
+        <h2 style={{ fontSize: '1.25rem', fontWeight: 'bold' }}>Job Context</h2>
+        <div style={{ width: '24px' }}></div>
       </div>
 
-      <div className="flex-1 flex flex-col space-y-4">
-
+      <div style={{ flex: 1, overflowY: 'auto' }}>
         {/* Extension Detection Status Banner */}
-        <div className={`transition-all duration-500 overflow-hidden ${scanning || detected ? 'opacity-100' : 'opacity-0'}`}>
+        <div style={{ transition: 'opacity 0.5s', opacity: scanning || detected ? 1 : 0, marginBottom: '1rem' }}>
           {scanning ? (
-            <div className="bg-slate-100 border border-slate-200 p-4 rounded-xl flex items-center gap-3">
-              <div className="w-5 h-5 border-2 border-slate-300 border-t-blue-500 rounded-full animate-spin"></div>
-              <div>
-                <h3 className="font-semibold text-slate-700 text-sm">Scanning active tab...</h3>
-                <p className="text-xs text-slate-500">Looking for job descriptions</p>
-              </div>
+            <div className="status-badge" style={{ background: '#f1f5f9', color: '#475569', width: '100%', justifyContent: 'center' }}>
+              <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></div>
+              Scanning tab...
             </div>
           ) : detected ? (
-            <div className="bg-green-50 border border-green-200 p-4 rounded-xl flex items-start gap-3 animate-slide-up">
-              <div className="mt-0.5 bg-green-500 p-1 rounded-full">
-                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-              </div>
-              <div>
-                <h3 className="font-semibold text-green-900 text-sm">Job Description Detected!</h3>
-                <p className="text-xs text-green-700 mt-1">
-                  We found a job posting on the active tab. You can edit it below if needed.
-                </p>
-              </div>
+            <div className="status-badge status-success" style={{ width: '100%', justifyContent: 'center' }}>
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+              Job detected!
             </div>
           ) : null}
         </div>
 
-        <div>
-          <label className="block text-sm font-medium text-slate-700 mb-1">Job Description</label>
+        <div className="input-group">
+          <label className="input-label">Job Title</label>
+          <input
+            type="text"
+            className="input-field"
+            placeholder="e.g. Senior Product Designer"
+            value={jobTitle}
+            onChange={(e) => setJobTitle(e.target.value)}
+          />
+        </div>
+
+        <div className="input-group">
+          <label className="input-label">Company Name</label>
+          <input
+            type="text"
+            className="input-field"
+            placeholder="e.g. Acme Corp"
+            value={companyName}
+            onChange={(e) => setCompanyName(e.target.value)}
+          />
+        </div>
+
+        <div className="input-group">
+          <label className="input-label">Job Description</label>
           <textarea
-            className={`w-full h-64 p-3 border rounded-lg outline-none resize-none text-sm transition-all duration-300 ${detected ? 'border-green-300 ring-1 ring-green-100' : 'border-slate-300 focus:ring-2 focus:ring-blue-500'
-              }`}
+            className="input-field textarea-field"
+            style={{ minHeight: '150px' }}
             placeholder="Paste the job description here..."
             value={jd}
             onChange={(e) => setJd(e.target.value)}
@@ -104,19 +117,16 @@ const JobContextInput: React.FC<JobContextInputProps> = ({ onAnalyze, onBack }) 
         </div>
       </div>
 
-      <div className="pt-4 mt-4 border-t border-slate-200">
+      <div style={{ paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
         <button
-          onClick={() => onAnalyze(jd, jobTitle)}
+          onClick={() => onAnalyze(jd, jobTitle, companyName)}
           disabled={!isValid || scanning}
-          className={`w-full py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 ${isValid && !scanning
-            ? 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg hover:shadow-indigo-500/30'
-            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-            }`}
+          className="btn btn-primary"
         >
           {scanning ? 'Scanning...' : (
             <>
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
-              Tailor Resume with Gemini
+              <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.384-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" /></svg>
+              Tailor Resume
             </>
           )}
         </button>

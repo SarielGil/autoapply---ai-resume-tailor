@@ -6,10 +6,11 @@ interface PreviewResultProps {
     data: TailoredResume;
     fullName: string;
     jobTitle?: string;
+    companyName?: string;
     onReset: () => void;
 }
 
-const PreviewResult: React.FC<PreviewResultProps> = ({ data, fullName, jobTitle, onReset }) => {
+const PreviewResult: React.FC<PreviewResultProps> = ({ data, fullName, jobTitle, companyName, onReset }) => {
 
     const generatePDF = () => {
         const doc = new jsPDF();
@@ -17,7 +18,6 @@ const PreviewResult: React.FC<PreviewResultProps> = ({ data, fullName, jobTitle,
         // Simple PDF formatting
         const margin = 15;
         let y = 20;
-        const lineHeight = 6;
         const pageWidth = 210;
         const maxLineWidth = pageWidth - margin * 2;
 
@@ -50,7 +50,6 @@ const PreviewResult: React.FC<PreviewResultProps> = ({ data, fullName, jobTitle,
         doc.line(margin, y - 5, pageWidth - margin, y - 5);
 
         // Summary
-        // Summary
         doc.setFontSize(14);
         doc.setTextColor(0, 0, 0); // Black for headers
         doc.setFont("helvetica", "bold");
@@ -72,14 +71,11 @@ const PreviewResult: React.FC<PreviewResultProps> = ({ data, fullName, jobTitle,
         doc.setFontSize(10);
         doc.setFont("helvetica", "normal");
 
-        // Improve skills spacing - use a bulleted list or cleaner separation
-        // Option: Split into lines based on width, but ensure comma spacing is respected
-        const skillsText = data.skills.join(",  "); // Double space for visual separation
+        const skillsText = data.skills.join(",  ");
         const skillsLines = doc.splitTextToSize(skillsText, maxLineWidth);
 
-        // Add a bit more line height for skills
         doc.text(skillsLines, margin, y, { lineHeightFactor: 1.5 });
-        y += skillsLines.length * 7 + 8; // Adjust spacing calculation for larger line height
+        y += skillsLines.length * 7 + 8;
 
         // Experience
         doc.setFontSize(14);
@@ -101,7 +97,7 @@ const PreviewResult: React.FC<PreviewResultProps> = ({ data, fullName, jobTitle,
             const title = `${job.role} at ${job.company}`;
             doc.text(title, margin, y);
 
-            // Render Duration right aligned or next to it
+            // Render Duration right aligned
             if (job.duration) {
                 doc.setFont("helvetica", "normal");
                 doc.setFontSize(10);
@@ -135,51 +131,58 @@ const PreviewResult: React.FC<PreviewResultProps> = ({ data, fullName, jobTitle,
 
         const safeName = fullName.replace(/[^a-z0-9]/gi, '_');
         const safeTitle = jobTitle ? jobTitle.replace(/[^a-z0-9]/gi, '_') : 'Tailored_Resume';
-        doc.save(`${safeName}_${safeTitle}.pdf`);
+        const safeCompany = companyName ? companyName.replace(/[^a-z0-9]/gi, '_') : '';
+
+        // Construct filename: Name_Title_Company.pdf or Name_Title.pdf
+        const fileName = safeCompany
+            ? `${safeName}_${safeTitle}_${safeCompany}.pdf`
+            : `${safeName}_${safeTitle}.pdf`;
+
+        doc.save(fileName);
     };
 
     return (
-        <div className="flex flex-col h-full bg-white relative">
-            <div className="p-4 border-b border-slate-100 flex justify-between items-center sticky top-0 bg-white/95 backdrop-blur z-10">
-                <h2 className="font-bold text-slate-800">Your Tailored Resume</h2>
-                <button onClick={onReset} className="text-xs text-slate-500 hover:text-slate-800 underline">Start Over</button>
+        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'white', position: 'relative' }}>
+            <div style={{ padding: '1rem', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(255,255,255,0.95)', position: 'sticky', top: 0, zIndex: 10 }}>
+                <h2 style={{ fontWeight: 'bold', color: 'var(--text-main)', fontSize: '1rem' }}>Tailored Resume</h2>
+                <button onClick={onReset} style={{ background: 'none', border: 'none', fontSize: '0.8rem', color: 'var(--text-muted)', textDecoration: 'underline', cursor: 'pointer' }}>Start Over</button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-8 font-serif">
-                <header className="mb-6 border-b pb-4">
-                    <h1 className="text-3xl font-bold text-gray-900 mb-2">{data.fullName || fullName}</h1>
-                    <div className="text-sm text-gray-600 flex flex-wrap gap-x-4 gap-y-1">
+            <div style={{ flex: 1, overflowY: 'auto', padding: '2rem', fontFamily: 'serif' }}>
+                <header style={{ marginBottom: '1.5rem', borderBottom: '1px solid #eee', paddingBottom: '1rem' }}>
+                    <h1 style={{ fontSize: '1.8rem', fontWeight: 'bold', color: '#111', marginBottom: '0.5rem', lineHeight: 1.2 }}>{data.fullName || fullName}</h1>
+                    <div style={{ fontSize: '0.9rem', color: '#555', display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
                         {data.contactInfo.email && (
-                            <span className="flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
                                 {data.contactInfo.email}
                             </span>
                         )}
                         {data.contactInfo.phone && (
-                            <span className="flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" /></svg>
                                 {data.contactInfo.phone}
                             </span>
                         )}
                         {data.contactInfo.location && (
-                            <span className="flex items-center gap-1">
-                                <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                            <span style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                                <svg width="12" height="12" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
                                 {data.contactInfo.location}
                             </span>
                         )}
                     </div>
                 </header>
 
-                <section className="mb-6">
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-2">Professional Summary</h3>
-                    <p className="text-gray-800 leading-relaxed text-sm">{data.summary}</p>
+                <section style={{ marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#888', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>Professional Summary</h3>
+                    <p style={{ color: '#333', lineHeight: '1.6', fontSize: '0.9rem' }}>{data.summary}</p>
                 </section>
 
-                <section className="mb-6">
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-2">Skills</h3>
-                    <div className="flex flex-wrap gap-2">
+                <section style={{ marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#888', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>Skills</h3>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
                         {data.skills.map((skill, i) => (
-                            <span key={i} className="bg-slate-100 text-slate-700 px-2 py-1 rounded text-xs font-medium border border-slate-200">
+                            <span key={i} style={{ background: '#f8fafc', color: '#334155', padding: '0.25rem 0.5rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: '500', border: '1px solid #e2e8f0' }}>
                                 {skill}
                             </span>
                         ))}
@@ -187,24 +190,24 @@ const PreviewResult: React.FC<PreviewResultProps> = ({ data, fullName, jobTitle,
                 </section>
 
                 <section>
-                    <h3 className="text-sm font-bold uppercase tracking-wider text-gray-500 mb-4">Experience</h3>
-                    <div className="space-y-6">
+                    <h3 style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#888', marginBottom: '1rem', letterSpacing: '0.05em' }}>Experience</h3>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         {data.experience.map((job, idx) => (
                             <div key={idx}>
-                                <div className="flex justify-between items-baseline mb-2">
+                                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.5rem' }}>
                                     <div>
-                                        <h4 className="font-bold text-gray-900">{job.role}</h4>
-                                        <span className="text-gray-600 text-sm italic">{job.company}</span>
+                                        <h4 style={{ fontWeight: 'bold', color: '#111', margin: 0 }}>{job.role}</h4>
+                                        <span style={{ color: '#555', fontSize: '0.9rem', fontStyle: 'italic' }}>{job.company}</span>
                                     </div>
                                     {job.duration && (
-                                        <span className="text-xs font-medium text-gray-500 bg-gray-50 px-2 py-1 rounded whitespace-nowrap">
+                                        <span style={{ fontSize: '0.75rem', color: '#666', background: '#f3f4f6', padding: '0.2rem 0.5rem', borderRadius: '4px', whiteSpace: 'nowrap' }}>
                                             {job.duration}
                                         </span>
                                     )}
                                 </div>
-                                <ul className="list-disc list-outside ml-4 space-y-1.5">
+                                <ul style={{ listStyleType: 'disc', paddingLeft: '1rem', margin: 0 }}>
                                     {job.points.map((pt, pIdx) => (
-                                        <li key={pIdx} className="text-gray-700 text-sm leading-relaxed">{pt}</li>
+                                        <li key={pIdx} style={{ color: '#444', fontSize: '0.9rem', lineHeight: '1.5', marginBottom: '0.25rem' }}>{pt}</li>
                                     ))}
                                 </ul>
                             </div>
@@ -213,12 +216,13 @@ const PreviewResult: React.FC<PreviewResultProps> = ({ data, fullName, jobTitle,
                 </section>
             </div>
 
-            <div className="p-4 border-t border-slate-200 bg-white shadow-up z-20">
+            <div style={{ padding: '1rem', borderTop: '1px solid var(--border)', background: 'white', zIndex: 20, boxShadow: '0 -4px 6px -1px rgba(0,0,0,0.05)' }}>
                 <button
                     onClick={generatePDF}
-                    className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-3 rounded-xl shadow-lg transition-all flex items-center justify-center gap-2"
+                    className="btn btn-primary"
+                    style={{ background: '#059669' }}
                 >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                    <svg width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
                     Download PDF
                 </button>
             </div>

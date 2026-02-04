@@ -13,13 +13,35 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 // Heuristics to analyze the page
 function analyzePage() {
     const title = findJobTitle();
+    const company = findCompanyName();
     const description = findJobDescription();
 
     return {
         title,
+        company,
         description,
         url: window.location.href
     };
+}
+
+function findCompanyName() {
+    const selectors = [
+        '.job-details-jobs-unified-top-card__company-name', // LinkedIn
+        '[data-company-name]',
+        '.company-name',
+        '[class*="companyName"]',
+        '[class*="CompanyName"]',
+        'a[href^="/company/"]'
+    ];
+
+    for (const selector of selectors) {
+        const el = document.querySelector(selector);
+        if (el && el.textContent) {
+            return el.textContent.trim();
+        }
+    }
+    // Fallback: Try to find common patterns in title "Role at Company"
+    return "";
 }
 
 function findJobTitle() {
