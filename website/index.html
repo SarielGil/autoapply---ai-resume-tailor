@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AutoApply | AI-Powered Resume Tailoring</title>
+    <meta name="description"
+        content="Land your dream job with AutoApply. A Chrome Extension that tailors your resume to any job description instantly using Gemini AI.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+    <nav class="glass-nav">
+        <div class="container nav-content">
+            <div class="logo">
+                <div class="logo-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path
+                            d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                </div>
+                <span>AutoApply</span>
+            </div>
+            <div class="nav-links">
+                <a href="#features">Features</a>
+                <a href="#how-it-works">How it Works</a>
+                <a href="#install" class="btn-primary">Get Extension</a>
+            </div>
+        </div>
+    </nav>
+
+    <header class="hero">
+        <div class="container hero-grid">
+            <div class="hero-text">
+                <div class="badge">Powered by Google Gemini</div>
+                <h1>Tailor Your Resume <span class="gradient-text">Instantly</span></h1>
+                <p>Stop sending the same resume to every job. AutoApply scans job descriptions and optimizes your
+                    experience bullet points using advanced AI, all within your browser.</p>
+                <div class="hero-btns">
+                    <a href="#install" class="btn-large">Start Applying Smarter</a>
+                    <a href="https://github.com/SarielGil/autoapply---ai-resume-tailor" class="btn-outline">View on
+                        GitHub</a>
+                </div>
+            </div>
+            <div class="hero-visual">
+                <div class="image-wrapper">
+                    <img src="../docs/images/banner.png" alt="AutoApply Interface">
+                    <div class="glow-effect"></div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <section id="why" class="why-section">
+        <div class="container text-center">
+            <h2 class="section-title">Why AutoApply?</h2>
+            <p class="section-subtitle">Applying to jobs is a numbers game, but quality wins. We help you scale quality.
+            </p>
+
+            <div class="grid-3">
+                <div class="card glass-card">
+                    <div class="card-icon blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                    <h3>Blazing Fast</h3>
+                    <p>Go from a generic resume to a tailored PDF in under 10 seconds. No more manual editing for hours.
+                    </p>
+                </div>
+                <div class="card glass-card">
+                    <div class="card-icon purple">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path
+                                d="M21 16V8a2 2 0 00-1-1.73l-7-4a2 2 0 00-2 0l-7 4A2 2 0 003 8v8a2 2 0 001 1.73l7 4a2 2 0 002 0l7-4A2 2 0 0021 16z" />
+                            <polyline points="7.5 4.21 12 6.81 16.5 4.21" />
+                            <polyline points="7.5 19.79 7.5 14.63 3 12" />
+                            <polyline points="21 12 16.5 14.63 16.5 19.79" />
+                            <polyline points="3.27 6.96 12 12.01 20.73 6.96" />
+                            <line x1="12" y1="22.08" x2="12" y2="12" />
+                        </svg>
+                    </div>
+                    <h3>Smart Detection</h3>
+                    <p>Our context script automatically finds job titles and descriptions on LinkedIn, Indeed, and more.
+                    </p>
+                </div>
+                <div class="card glass-card">
+                    <div class="card-icon green">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                        </svg>
+                    </div>
+                    <h3>Privacy First</h3>
+                    <p>Your data stays with you. We use your own Gemini API key and store your resume locally in your
+                        browser.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="how-it-works" class="steps-section">
+        <div class="container">
+            <h2 class="section-title text-center">3 Simple Steps</h2>
+            <div class="steps-container">
+                <div class="step-item">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Install Extension</h4>
+                        <p>Load the AutoApply extension into your Chrome browser in under a minute.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Browse Jobs</h4>
+                        <p>Go to any job posting. The extension will automatically detect the role requirements.</p>
+                    </div>
+                </div>
+                <div class="step-item">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Tailor & Download</h4>
+                        <p>One click to re-write your bullet points with Gemini AI and download a professional PDF.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="install" class="install-section">
+        <div class="container glass-panel">
+            <div class="install-content">
+                <h2>Ready to Start?</h2>
+                <p>AutoApply is currently in Developer Beta. Follow these quick steps to add it to Chrome:</p>
+
+                <ol class="install-list">
+                    <li>Download or Clone the <a href="https://github.com/SarielGil/autoapply---ai-resume-tailor"
+                            target="_blank">GitHub Repo</a>.</li>
+                    <li>Run <code>npm install && npm run build</code> in your terminal.</li>
+                    <li>Go to <code>chrome://extensions</code> in Chrome.</li>
+                    <li>Turn on <strong>Developer Mode</strong>.</li>
+                    <li>Click <strong>Load Unpacked</strong> and select the <code>dist</code> folder.</li>
+                </ol>
+
+                <a href="https://github.com/SarielGil/autoapply---ai-resume-tailor" class="btn-large pulse">Get the
+                    Files Now</a>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container footer-content">
+            <p>&copy; 2026 AutoApply Project. Built by Antigravity AI.</p>
+            <div class="socials">
+                <a href="https://github.com/SarielGil/autoapply---ai-resume-tailor">GitHub</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="main.js"></script>
+</body>
+
+</html>
