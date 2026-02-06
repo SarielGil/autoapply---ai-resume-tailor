@@ -30,10 +30,17 @@ const JobContextInput: React.FC<JobContextInputProps> = ({ onAnalyze, onBack, hi
       try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab?.id) {
-          // Send message to content script
+          // 1. Inject the content script on the fly
+          // We wrap this in a check to avoid injecting if already present, though scripting.executeScript is fast
+          await chrome.scripting.executeScript({
+            target: { tabId: tab.id },
+            files: ['content.js']
+          });
+
+          // 2. Send message to content script
           chrome.tabs.sendMessage(tab.id, { action: "GET_JOB_CONTEXT" }, (response) => {
             if (chrome.runtime.lastError) {
-              console.log(`Attempt ${attempt} - Content script not ready:`, chrome.runtime.lastError);
+              console.log(`Attempt ${attempt} - Communication error:`, chrome.runtime.lastError);
               if (attempt < retries) {
                 setTimeout(() => performScan(attempt + 1), 500);
               } else {
