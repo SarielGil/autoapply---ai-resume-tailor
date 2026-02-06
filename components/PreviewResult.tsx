@@ -173,8 +173,17 @@ const PreviewResult: React.FC<PreviewResultProps> = ({ data, fullName, jobTitle,
                     </div>
                 </header>
 
-                <section style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#888', marginBottom: '0.5rem', letterSpacing: '0.05em' }}>Professional Summary</h3>
+                <section style={{ marginBottom: '1.5rem', position: 'relative' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                        <h3 style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#888', margin: 0, letterSpacing: '0.05em' }}>Professional Summary</h3>
+                        <button
+                            onClick={() => navigator.clipboard.writeText(data.summary)}
+                            title="Copy Summary"
+                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', padding: '4px' }}
+                        >
+                            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                        </button>
+                    </div>
                     <p style={{ color: '#333', lineHeight: '1.6', fontSize: '0.9rem' }}>{data.summary}</p>
                 </section>
 
@@ -193,17 +202,26 @@ const PreviewResult: React.FC<PreviewResultProps> = ({ data, fullName, jobTitle,
                     <h3 style={{ fontSize: '0.8rem', fontWeight: 'bold', textTransform: 'uppercase', color: '#888', marginBottom: '1rem', letterSpacing: '0.05em' }}>Experience</h3>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                         {data.experience.map((job, idx) => (
-                            <div key={idx}>
+                            <div key={idx} style={{ position: 'relative' }}>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '0.5rem' }}>
                                     <div>
                                         <h4 style={{ fontWeight: 'bold', color: '#111', margin: 0 }}>{job.role}</h4>
                                         <span style={{ color: '#555', fontSize: '0.9rem', fontStyle: 'italic' }}>{job.company}</span>
                                     </div>
-                                    {job.duration && (
-                                        <span style={{ fontSize: '0.75rem', color: '#666', background: '#f3f4f6', padding: '0.2rem 0.5rem', borderRadius: '4px', whiteSpace: 'nowrap' }}>
-                                            {job.duration}
-                                        </span>
-                                    )}
+                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                                        {job.duration && (
+                                            <span style={{ fontSize: '0.75rem', color: '#666', background: '#f3f4f6', padding: '0.2rem 0.5rem', borderRadius: '4px', whiteSpace: 'nowrap' }}>
+                                                {job.duration}
+                                            </span>
+                                        )}
+                                        <button
+                                            onClick={() => navigator.clipboard.writeText(job.points.map(p => `• ${p}`).join('\n'))}
+                                            title="Copy Bullet Points"
+                                            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', padding: '4px' }}
+                                        >
+                                            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3" /></svg>
+                                        </button>
+                                    </div>
                                 </div>
                                 <ul style={{ listStyleType: 'disc', paddingLeft: '1rem', margin: 0 }}>
                                     {job.points.map((pt, pIdx) => (

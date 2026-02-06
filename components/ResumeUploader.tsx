@@ -67,9 +67,15 @@ const ResumeUploader: React.FC<ResumeUploaderProps> = ({ onNext, initialData }) 
       } else {
         alert("Please upload a .pdf, .txt, or .md file.");
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error parsing file:", error);
-      alert("Failed to read the file. Please try converting it to text or pasting the content.");
+      let errorMsg = "Failed to read the file. ";
+      if (error.message?.includes("Worker")) {
+        errorMsg += "PDF worker failed to load. Try pasting the content manually.";
+      } else {
+        errorMsg += "Please try converting it to text or pasting the content below.";
+      }
+      alert(errorMsg);
     } finally {
       setIsParsing(false);
     }

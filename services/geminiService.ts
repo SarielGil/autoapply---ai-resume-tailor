@@ -21,11 +21,56 @@ const getClient = async () => {
   return new GoogleGenAI({ apiKey });
 };
 
+export const validateApiKey = async (apiKey: string): Promise<boolean> => {
+  try {
+    const ai = new GoogleGenAI({ apiKey });
+    await ai.models.generateContent({
+      model: "gemini-3-flash",
+      contents: "hi",
+    });
+    return true;
+  } catch (error) {
+    console.error("API Key Validation Error (Gemini 3):", error);
+    // Fallback check against 1.5 if 3 isn't available for some reason
+    try {
+      const ai = new GoogleGenAI({ apiKey });
+      await ai.models.generateContent({
+        model: "gemini-1.5-flash",
+        contents: "hi",
+      });
+      return true;
+    } catch (e) {
+      return false;
+    }
+  }
+};
+
+export const testModels = async (apiKey: string): Promise<Record<string, boolean>> => {
+  const models = ["gemini-3-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
+  const results: Record<string, boolean> = {};
+  const ai = new GoogleGenAI({ apiKey });
+
+  for (const model of models) {
+    try {
+      await ai.models.generateContent({
+        model: model,
+        contents: "ping",
+      });
+      results[model] = true;
+    } catch (e) {
+      console.warn(`Model ${model} not available:`, e);
+      results[model] = false;
+    }
+  }
+  return results;
+};
+
 export const tailorResume = async (
   originalResume: string,
   jobDescription: string
 ): Promise<TailoredResume> => {
   const ai = await getClient();
+  const models = ["gemini-3-flash", "gemini-2.5-flash", "gemini-1.5-flash"];
 
   // Define the schema for the structured output
   const resumeSchema: Schema = {
@@ -68,8 +113,10 @@ export const tailorResume = async (
         },
         description: "Work experience entries.",
       },
+      detectedJobTitle: { type: Type.STRING, description: "The specific job title for the position described in the Job Description." },
+      detectedCompany: { type: Type.STRING, description: "The name of the company hiring for this position, extracted from the Job Description." },
     },
-    required: ["fullName", "contactInfo", "summary", "skills", "experience"],
+    required: ["fullName", "contactInfo", "summary", "skills", "experience", "detectedJobTitle", "detectedCompany"],
   };
 
   const prompt = `
@@ -81,17 +128,20 @@ export const tailorResume = async (
        - Extract the **Full Name** of the candidate.
        - Extract Contact Info (email, phone, location).
     
-    2. **Experience Section Style**:
+    2. **Job Analysis**:
+       - Analyze the **Job Description** and extract the target **Job Title** and **Company Name**.
+    
+    3. **Experience Section Style**:
        - Start every bullet point with a strong **Action Verb** (e.g., Engineered, Spearheaded, Optimized, Led, Developed).
        - **DO NOT** use a repetitive formula like "Achieved X by doing Y". Make it sound natural and professional.
        - Focus on quantitative results (metrics) where possible, but ensure they are grounded in the original text.
        - Tailor the phrasing to match the keywords and requirements in the Job Description.
 
-    3. **Dates/Duration**: 
+    4. **Dates/Duration**: 
        - Preserve the start and end dates exactly as they appear in the original resume.
        - If a role has no dates, leave the duration field empty. Do not invent dates.
 
-    4. **General Guidelines**:
+    5. **General Guidelines**:
        - Maintain the truthfulness of the original resume.
        - Highlight skills that appear in both the resume and the job description.
        - Keep the tone professional, active, and concise.
@@ -103,25 +153,42 @@ export const tailorResume = async (
     ${originalResume}
   `;
 
-  try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: resumeSchema,
-        thinkingConfig: { thinkingBudget: 0 },
-      },
-    });
+  let lastError: any = null;
 
-    const text = response.text;
-    if (!text) {
-      throw new Error("No response generated from Gemini.");
+  for (const modelName of models) {
+    try {
+      console.log(`Attempting tailoring with model: ${modelName}`);
+      const response = await ai.models.generateContent({
+        model: modelName,
+        contents: prompt,
+        config: {
+          responseMimeType: "application/json",
+          responseSchema: resumeSchema,
+        },
+        safetySettings: [
+          { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+          { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+          { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+          { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" },
+        ]
+      } as any);
+
+      const text = response.text;
+      if (!text) {
+        console.warn(`Model ${modelName} returned no text. Trying next model.`);
+        continue;
+      }
+
+      console.log(`Successfully tailored resume using ${modelName}`);
+      return JSON.parse(text) as TailoredResume;
+    } catch (error: any) {
+      console.warn(`Model ${modelName} failed:`, error.message);
+      lastError = error;
+      // Continue to next model
     }
-
-    return JSON.parse(text) as TailoredResume;
-  } catch (error) {
-    console.error("Gemini Error:", error);
-    throw new Error("Failed to tailor resume. Please try again.");
   }
+
+  // If all models fail
+  console.error("All Gemini models failed tailoring.", lastError);
+  throw new Error(`Failed to tailor resume. Last error: ${lastError?.message || 'Unknown error'}`);
 };

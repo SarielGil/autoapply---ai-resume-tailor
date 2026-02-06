@@ -4,6 +4,7 @@ export enum AppStep {
   JOB_CONTEXT = 'JOB_CONTEXT',
   PROCESSING = 'PROCESSING',
   PREVIEW = 'PREVIEW',
+  HISTORY = 'HISTORY',
 }
 
 export interface ResumeData {
@@ -33,6 +34,18 @@ export interface TailoredResume {
     duration?: string;
     points: string[];
   }[];
+  detectedJobTitle?: string;
+  detectedCompany?: string;
+}
+
+export interface HistoryItem {
+  id: string;
+  timestamp: number;
+  jobTitle: string;
+  company: string;
+  originalDescription: string;
+  tailoredData: TailoredResume;
+  url?: string;
 }
 
 // Global declaration for jsPDF loaded via CDN

@@ -27,64 +27,109 @@ function analyzePage() {
 function findCompanyName() {
     const selectors = [
         '.job-details-jobs-unified-top-card__company-name', // LinkedIn
-        '[data-company-name]',
+        '.job-details-jobs-unified-top-card__company-name a',
+        '.topcard__org-name-link', // LinkedIn public
+        '.company-header-name', // Greenhouse
+        '.job-header__company', // Lever
+        '[data-automation-id="workdayCompanyHeader"]', // Workday
+        '.employer-name',
         '.company-name',
-        '[class*="companyName"]',
-        '[class*="CompanyName"]',
-        'a[href^="/company/"]'
+        '.org-name',
+        '.job-company',
+        '.company'
     ];
 
     for (const selector of selectors) {
         const el = document.querySelector(selector);
         if (el && el.textContent) {
-            return el.textContent.trim();
+            const company = el.textContent.trim().split('·')[0].split('\n')[0].trim();
+            if (company) return company;
         }
     }
-    // Fallback: Try to find common patterns in title "Role at Company"
+
+    // Check meta tags
+    const ogSite = document.querySelector('meta[property="og:site_name"]');
+    if (ogSite && (ogSite as HTMLMetaElement).content) {
+        return (ogSite as HTMLMetaElement).content;
+    }
+
     return "";
 }
 
 function findJobTitle() {
-    // Common selectors for job titles
     const selectors = [
         'h1.job-title',
-        'h1',
+        'h1.topcard__title', // LinkedIn public
+        'h1[class*="title"]',
         '.job-header h1',
-        '[class*="job-title"]',
-        '[class*="JobTitle"]'
+        '.job-title',
+        '[class*="jobTitle"]',
+        '[class*="JobTitle"]',
+        'h1'
     ];
 
     for (const selector of selectors) {
         const el = document.querySelector(selector);
         if (el && el.textContent) {
-            return el.textContent.trim();
+            const title = el.textContent.trim().split('\n')[0].trim();
+            if (title && title.length > 3) return title;
         }
     }
-    return document.title;
+
+    // Try meta tags
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle && (ogTitle as HTMLMetaElement).content) {
+        return (ogTitle as HTMLMetaElement).content;
+    }
+
+    return document.title.split('|')[0].split('-')[0].trim();
 }
 
 function findJobDescription() {
-    // 1. Try to find common containers
-    const candidates = [
+    // 1. Specific platform selectors
+    const platformSelectors = [
+        '.job-details-jobs-unified-top-card__description', // LinkedIn
+        '#job-details', // LinkedIn
+        '.description__text', // LinkedIn public
+        '#content', // Greenhouse
+        '.job-description', // General
         '#job-description',
-        '.job-description',
-        '[class*="description"]', // Broad class search
+        '.posting-description', // Lever
+        '[data-automation-id="jobPostingDescription"]', // Workday
+        '.jobs-description',
+        '.job-body'
+    ];
+
+    for (const selector of platformSelectors) {
+        const el = document.querySelector(selector);
+        if (el && el.textContent && el.textContent.length > 100) {
+            return (el as HTMLElement).innerText.trim();
+        }
+    }
+
+    // 2. Generic containers
+    const candidates = [
         'article',
-        'main'
+        'main',
+        '[role="main"]',
+        '.main-content',
+        '#main-content',
+        '.content',
+        '#content',
+        '.job-details',
+        '#job-details'
     ];
 
     let bestText = "";
     let maxLen = 0;
 
-    // Strategy 1: Look for specific containers
     for (const selector of candidates) {
         const els = document.querySelectorAll(selector);
         for (const el of els as any) {
-            // Basic filter to avoid navs/footers if caught by 'description' class
-            if (el.tagName === 'NAV' || el.tagName === 'FOOTER') continue;
+            // Initially avoid common noise, but we'll relax this if nothing is found
+            if (['NAV', 'FOOTER', 'HEADER', 'SCRIPT', 'STYLE'].includes(el.tagName)) continue;
 
             const text = (el as HTMLElement).innerText;
-            // Job descriptions are usually long
             if (text.length > 200 && text.length > maxLen) {
                 bestText = text;
                 maxLen = text.length;
@@ -94,6 +139,27 @@ function findJobDescription() {
 
     if (bestText) return bestText.trim();
 
-    // Strategy 2: If no specific container, fallback to body but try to exclude obvious non-content
-    return document.body.innerText.substring(0, 5000); // Truncate to avoid massive payloads
+    // Fallback search: look for any div with many paragraphs
+    const divs = document.querySelectorAll('div');
+    for (const div of divs as any) {
+        const pCount = div.querySelectorAll('p').length;
+        if (pCount >= 2) {
+            const text = div.innerText;
+            if (text.length > 200 && text.length > maxLen) {
+                bestText = text;
+                maxLen = text.length;
+            }
+        }
+    }
+
+    // Ultimate fallback: Capture ALL text if we haven't found a "best" container
+    // We try to exclude scripts and styles at least.
+    const bodyCopy = document.body.cloneNode(true) as HTMLElement;
+    const toRemove = bodyCopy.querySelectorAll('nav, footer, script, style, header');
+    toRemove.forEach(el => el.remove());
+
+    const finalFallback = bodyCopy.innerText.trim();
+    if (finalFallback.length > 100) return finalFallback;
+
+    return document.body.innerText.substring(0, 10000).trim();
 }

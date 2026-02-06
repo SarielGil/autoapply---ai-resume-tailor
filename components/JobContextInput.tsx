@@ -1,44 +1,55 @@
 import React, { useState, useEffect } from 'react';
+import { HistoryItem } from '../types';
 
 interface JobContextInputProps {
-  onAnalyze: (jd: string, title?: string, company?: string) => void;
+  onAnalyze: (jd: string, title?: string, company?: string, url?: string) => void;
   onBack: () => void;
+  history?: HistoryItem[];
 }
 
-const JobContextInput: React.FC<JobContextInputProps> = ({ onAnalyze, onBack }) => {
+const JobContextInput: React.FC<JobContextInputProps> = ({ onAnalyze, onBack, history = [] }) => {
   const [jd, setJd] = useState('');
   const [jobTitle, setJobTitle] = useState('');
   const [companyName, setCompanyName] = useState('');
+  const [currentUrl, setCurrentUrl] = useState('');
   const [scanning, setScanning] = useState(true);
   const [detected, setDetected] = useState(false);
+  const [pastApplications, setPastApplications] = useState<HistoryItem[]>([]);
 
-  useEffect(() => {
-    const scanPage = async () => {
-      // Check if we are in an extension context
-      if (typeof chrome === 'undefined' || !chrome.tabs) {
-        setScanning(false);
-        return;
-      }
+  const scanPage = async (retries = 2) => {
+    setScanning(true);
+    setDetected(false);
 
+    // Check if we are in an extension context
+    if (typeof chrome === 'undefined' || !chrome.tabs) {
+      setScanning(false);
+      return;
+    }
+
+    const performScan = async (attempt: number) => {
       try {
         const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
         if (tab?.id) {
           // Send message to content script
           chrome.tabs.sendMessage(tab.id, { action: "GET_JOB_CONTEXT" }, (response) => {
             if (chrome.runtime.lastError) {
-              console.log("Content script not ready or error:", chrome.runtime.lastError);
-              setScanning(false);
+              console.log(`Attempt ${attempt} - Content script not ready:`, chrome.runtime.lastError);
+              if (attempt < retries) {
+                setTimeout(() => performScan(attempt + 1), 500);
+              } else {
+                setScanning(false);
+              }
               return;
             }
 
-            if (response) {
-              // We found something
-              if (response.description) {
-                setJd(response.description);
-                if (response.title) setJobTitle(response.title);
-                if (response.company) setCompanyName(response.company);
-                setDetected(true);
-              }
+            if (response && response.description) {
+              setJd(response.description);
+              if (response.title) setJobTitle(response.title);
+              if (response.company) setCompanyName(response.company);
+              if (response.url) setCurrentUrl(response.url);
+              setDetected(true);
+            } else {
+              setDetected(false);
             }
             setScanning(false);
           });
@@ -46,13 +57,35 @@ const JobContextInput: React.FC<JobContextInputProps> = ({ onAnalyze, onBack }) 
           setScanning(false);
         }
       } catch (err) {
-        console.error(err);
-        setScanning(false);
+        console.error("Scan error:", err);
+        if (attempt < retries) {
+          setTimeout(() => performScan(attempt + 1), 500);
+        } else {
+          setScanning(false);
+        }
       }
     };
 
+    performScan(1);
+  };
+
+  useEffect(() => {
     scanPage();
   }, []);
+
+  // Check for past applications whenever company name changes
+  useEffect(() => {
+    if (!companyName || history.length === 0) {
+      setPastApplications([]);
+      return;
+    }
+
+    const matches = history.filter(h =>
+      h.company.toLowerCase().includes(companyName.toLowerCase()) ||
+      companyName.toLowerCase().includes(h.company.toLowerCase())
+    );
+    setPastApplications(matches);
+  }, [companyName, history]);
 
   const isValid = jd.length > 20;
 
@@ -67,20 +100,54 @@ const JobContextInput: React.FC<JobContextInputProps> = ({ onAnalyze, onBack }) 
       </div>
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        {/* Extension Detection Status Banner */}
-        <div style={{ transition: 'opacity 0.5s', opacity: scanning || detected ? 1 : 0, marginBottom: '1rem' }}>
+        <div style={{ transition: 'opacity 0.5s', opacity: scanning || detected ? 1 : 1, marginBottom: '1rem' }}>
           {scanning ? (
             <div className="status-badge" style={{ background: '#f1f5f9', color: '#475569', width: '100%', justifyContent: 'center' }}>
               <div className="spinner" style={{ width: '16px', height: '16px', borderWidth: '2px' }}></div>
               Scanning tab...
             </div>
-          ) : detected ? (
-            <div className="status-badge status-success" style={{ width: '100%', justifyContent: 'center' }}>
-              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
-              Job detected!
+          ) : (
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
+              <div className={`status-badge ${detected ? 'status-success' : ''}`} style={{ flex: 1, justifyContent: 'center', background: detected ? '' : '#fef2f2', color: detected ? '' : '#991b1b' }}>
+                {detected ? (
+                  <>
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7" /></svg>
+                    Job detected!
+                  </>
+                ) : (
+                  <>
+                    <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+                    Detection failed
+                  </>
+                )}
+              </div>
+              <button
+                onClick={() => scanPage()}
+                className="btn"
+                style={{ width: 'auto', padding: '0 0.75rem', fontSize: '0.8rem', background: 'white', border: '1px solid var(--border)' }}
+              >
+                Rescan
+              </button>
             </div>
-          ) : null}
+          )}
         </div>
+
+        {/* Past Applications Warning */}
+        {pastApplications.length > 0 && (
+          <div style={{ background: '#fff7ed', border: '1px solid #fed7aa', borderRadius: '8px', padding: '0.75rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'flex-start', color: '#c2410c', fontSize: '0.9rem', fontWeight: 'bold', marginBottom: '0.5rem' }}>
+              <svg width="18" height="18" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" /></svg>
+              Previous Applications Found
+            </div>
+            <ul style={{ margin: 0, paddingLeft: '1.5rem', color: '#9a3412', fontSize: '0.85rem' }}>
+              {pastApplications.map(app => (
+                <li key={app.id} style={{ marginBottom: '0.25rem' }}>
+                  {app.jobTitle} ({new Date(app.timestamp).toLocaleDateString()})
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         <div className="input-group">
           <label className="input-label">Job Title</label>
@@ -119,7 +186,7 @@ const JobContextInput: React.FC<JobContextInputProps> = ({ onAnalyze, onBack }) 
 
       <div style={{ paddingTop: '1rem', borderTop: '1px solid var(--border)' }}>
         <button
-          onClick={() => onAnalyze(jd, jobTitle, companyName)}
+          onClick={() => onAnalyze(jd, jobTitle, companyName, currentUrl)}
           disabled={!isValid || scanning}
           className="btn btn-primary"
         >
