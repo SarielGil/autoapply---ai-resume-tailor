@@ -2,9 +2,14 @@
 <img width="1200" alt="AutoApply Banner" src="docs/images/banner.png" />
 </div>
 
-# 🚀 AutoApply: AI-Powered Resume Tailoring
+# TailorFit AI - Precision Resume Alignment
 
-**Stop spending hours manually editing your resume.** AutoApply is a Chrome Extension that uses Google's **Gemini AI** to instantly tailor your experience bullet points to match any job description.
+TailorFit AI is a powerful Chrome Extension that uses Google's latest Gemini AI models (3.0 Flash, 2.5, 1.5) to surgically align your resume with any job description instantly. Landing your dream job requires more than just applying; it requires the perfect fit. TailorFit AI makes it happen in seconds.
+
+## 🚀 Features
+
+- **Multi-Model Intelligence**: Automatically waterfall through Gemini 3.0, 2.5, and 1.5 for maximum reliability.
+- **Smart Page Scanning**: Intelligent detection of job context on LinkedIn, Greenhouse, Workday, and more.
 
 [![GitHub License](https://img.shields.io/github/license/SarielGil/autoapply---ai-resume-tailor)](https://github.com/SarielGil/autoapply---ai-resume-tailor/blob/main/LICENSE)
 [![GitHub Stars](https://img.shields.io/github/stars/SarielGil/autoapply---ai-resume-tailor)](https://github.com/SarielGil/autoapply---ai-resume-tailor/stargazers)

@@ -1,6 +1,6 @@
 // Content Script for AutoApply
 
-console.log("AutoApply Content Script Loaded");
+console.log("TailorFit AI Content Script Loaded");
 
 // Listen for messages from the popup
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {

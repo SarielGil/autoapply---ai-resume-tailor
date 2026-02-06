@@ -1,8 +1,8 @@
 {
     "manifest_version": 3,
-    "name": "AutoApply - AI Resume Tailor",
+    "name": "TailorFit AI",
     "version": "1.0.0",
-    "description": "Tailor your resume to any job post instantly using Gemini AI.",
+    "description": "Align your resume perfectly with any job post using Gemini AI.",
     "permissions": [
         "activeTab",
         "storage",

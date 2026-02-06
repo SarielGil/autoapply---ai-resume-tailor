@@ -33,7 +33,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Logo hover effect
     const logo = document.querySelector('.logo');
-    logo.addEventListener('mouseenter', () => {
-        logo.querySelector('.logo-icon').classList.add('animate-spin-slow');
-    });
+    if (logo) {
+        const logoIcon = logo.querySelector('.logo-icon');
+        if (logoIcon) {
+            logo.addEventListener('mouseenter', () => {
+                logoIcon.classList.add('animate-spin-slow');
+            });
+            logo.addEventListener('mouseleave', () => {
+                logoIcon.classList.remove('animate-spin-slow');
+            });
+        }
+    }
 });

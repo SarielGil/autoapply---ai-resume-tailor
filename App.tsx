@@ -231,12 +231,12 @@ const App: React.FC = () => {
       {/* Header */}
       <header className="header">
         <div className="header-title" onClick={() => step !== AppStep.API_KEY_SETUP && step !== AppStep.UPLOAD_RESUME && setStep(AppStep.JOB_CONTEXT)} style={{ cursor: 'pointer' }}>
-          <div className="brand-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+          <div className="brand-icon" style={{ background: 'linear-gradient(135deg, #06b6d4, #8b5cf6)', borderRadius: '6px', padding: '4px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5"><path d="M12 3L4 9V21H20V9L12 3Z" strokeLinecap="round" strokeLinejoin="round" /><path d="M12 3V21" strokeLinecap="round" strokeLinejoin="round" /></svg>
           </div>
           <div>
-            <h1 style={{ fontSize: '1.1rem', fontWeight: '700', margin: 0 }}>AutoApply</h1>
-            <p style={{ fontSize: '0.7rem', color: 'var(--primary)', fontWeight: 'bold', textTransform: 'uppercase', letterSpacing: '0.05em', margin: 0 }}>Beta</p>
+            <h1 style={{ fontSize: '1.2rem', fontWeight: '800', margin: 0, letterSpacing: '-0.02em' }}>TailorFit <span style={{ color: 'var(--primary)' }}>AI</span></h1>
+            <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: '600', textTransform: 'uppercase', letterSpacing: '0.1em', margin: 0 }}>Precision Matching</p>
           </div>
         </div>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
@@ -270,8 +270,8 @@ const App: React.FC = () => {
 
         {step === AppStep.API_KEY_SETUP && (
           <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', height: '100%', justifyContent: 'center' }}>
-            <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Welcome!</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: '1.5' }}>To use AutoApply, please enter your Google Gemini API Key. It is stored securely in your browser.</p>
+            <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem' }}>Welcome to TailorFit!</h2>
+            <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem', lineHeight: '1.5' }}>Align your resume perfectly with any job. To get started, please enter your Google Gemini API Key.</p>
 
             <div className="input-group">
               <label className="input-label">Gemini API Key</label>
