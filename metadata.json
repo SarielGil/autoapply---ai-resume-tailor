@@ -1,5 +1,5 @@
 {
-  "name": "AutoApply - AI Resume Tailor",
+  "name": "TailorFit AI",
   "description": "A Chrome Extension companion that analyzes job descriptions and tailors your resume instantly using Gemini.",
   "requestFramePermissions": []
 }

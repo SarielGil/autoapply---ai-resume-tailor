@@ -3,11 +3,13 @@ import ResumeUploader from './components/ResumeUploader';
 import JobContextInput from './components/JobContextInput';
 import PreviewResult from './components/PreviewResult';
 import HistoryView from './components/HistoryView';
-import { tailorResume, validateApiKey, testModels } from './services/geminiService';
+import { tailorResume, testModels } from './services/geminiService';
 import React, { useState, useEffect } from 'react';
 
-const RESUME_STORAGE_KEY = 'autoapply_resume_v1';
-const HISTORY_STORAGE_KEY = 'autoapply_history_v1';
+const RESUME_STORAGE_KEY = 'tailorfit_resume_v1';
+const HISTORY_STORAGE_KEY = 'tailorfit_history_v1';
+const OLD_RESUME_KEY = 'autoapply_resume_v1';
+const OLD_HISTORY_KEY = 'autoapply_history_v1';
 
 const App: React.FC = () => {
   const [step, setStep] = useState<AppStep>(AppStep.API_KEY_SETUP);
@@ -28,21 +30,25 @@ const App: React.FC = () => {
       let hasKey = false;
       // Check storage for API Key
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        const data = await chrome.storage.local.get(['geminiApiKey', HISTORY_STORAGE_KEY]);
+        const data = await chrome.storage.local.get(['geminiApiKey', HISTORY_STORAGE_KEY, OLD_HISTORY_KEY]);
         if (data.geminiApiKey) {
           hasKey = true;
-          setApiKeyInput(data.geminiApiKey); // Set apiKeyInput if key exists
+          setApiKeyInput(data.geminiApiKey);
         }
-        if (data[HISTORY_STORAGE_KEY]) {
-          setHistory(data[HISTORY_STORAGE_KEY]);
+
+        // Load history (with migration)
+        const historyData = data[HISTORY_STORAGE_KEY] || data[OLD_HISTORY_KEY];
+        if (historyData) {
+          setHistory(historyData);
         }
       } else {
         const localKey = localStorage.getItem('geminiApiKey');
         if (localKey) {
           hasKey = true;
-          setApiKeyInput(localKey); // Set apiKeyInput if key exists
+          setApiKeyInput(localKey);
         }
-        const savedHistory = localStorage.getItem(HISTORY_STORAGE_KEY);
+
+        const savedHistory = localStorage.getItem(HISTORY_STORAGE_KEY) || localStorage.getItem(OLD_HISTORY_KEY);
         if (savedHistory) {
           try {
             setHistory(JSON.parse(savedHistory));
@@ -64,15 +70,16 @@ const App: React.FC = () => {
   const checkSavedResume = async () => {
     // Check chrome storage first
     if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-      const data = await chrome.storage.local.get(RESUME_STORAGE_KEY);
-      if (data[RESUME_STORAGE_KEY]) {
-        setResumeData(data[RESUME_STORAGE_KEY]);
+      const data = await chrome.storage.local.get([RESUME_STORAGE_KEY, OLD_RESUME_KEY]);
+      const activeResume = data[RESUME_STORAGE_KEY] || data[OLD_RESUME_KEY];
+      if (activeResume) {
+        setResumeData(activeResume);
         setStep(AppStep.JOB_CONTEXT);
         return;
       }
     }
 
-    const saved = localStorage.getItem(RESUME_STORAGE_KEY);
+    const saved = localStorage.getItem(RESUME_STORAGE_KEY) || localStorage.getItem(OLD_RESUME_KEY);
     if (saved) {
       try {
         const parsed = JSON.parse(saved);
@@ -84,6 +91,7 @@ const App: React.FC = () => {
       } catch (e) {
         console.error("Failed to parse saved resume", e);
         localStorage.removeItem(RESUME_STORAGE_KEY);
+        localStorage.removeItem(OLD_RESUME_KEY);
       }
     }
     setStep(AppStep.UPLOAD_RESUME);

@@ -1,4 +1,4 @@
-// Content Script for AutoApply
+// Content Script for TailorFit AI
 
 console.log("TailorFit AI Content Script Loaded");
 
