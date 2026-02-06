@@ -1,3 +1,4 @@
+/// <reference types="chrome"/>
 import React, { useState, useEffect } from 'react';
 import { HistoryItem } from '../types';
 

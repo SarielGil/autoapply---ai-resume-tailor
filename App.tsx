@@ -1,3 +1,4 @@
+/// <reference types="chrome"/>
 import { AppStep, ResumeData, TailoredResume, HistoryItem } from './types';
 import ResumeUploader from './components/ResumeUploader';
 import JobContextInput from './components/JobContextInput';

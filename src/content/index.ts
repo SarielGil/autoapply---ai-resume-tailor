@@ -1,3 +1,4 @@
+/// <reference types="chrome"/>
 // Content Script for TailorFit AI
 
 console.log("TailorFit AI Content Script Loaded");
