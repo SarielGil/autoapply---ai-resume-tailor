@@ -26,4 +26,8 @@ dist-ssr
 # Sensitive files and personal data
 tests/resume-tailor.test.ts
 *.pdf
+build_log.txt
+.env
+.env.*
+*.zip
 

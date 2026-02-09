@@ -7,7 +7,43 @@ export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, '.', '');
 
   return {
-    plugins: [react()],
+    plugins: [
+      react(),
+      {
+        name: 'fix-pdfobject-url',
+        transform(code, id) {
+          if (id.includes('jspdf')) {
+            return {
+              code: code
+                .replace(
+                  /https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/pdfobject\/2\.1\.1\/pdfobject\.min\.js/g,
+                  '/pdfobject.min.js'
+                )
+                .replace(
+                  / integrity="sha512-[^"]+" crossorigin="anonymous"/g,
+                  ''
+                ),
+              map: null
+            };
+          }
+        },
+        // Also handle the final bundle just in case
+        renderChunk(code) {
+          return {
+            code: code
+              .replace(
+                /https:\/\/cdnjs\.cloudflare\.com\/ajax\/libs\/pdfobject\/2\.1\.1\/pdfobject\.min\.js/g,
+                '/pdfobject.min.js'
+              )
+              .replace(
+                / integrity="sha512-[^"]+" crossorigin="anonymous"/g,
+                ''
+              ),
+            map: null
+          };
+        }
+      }
+    ],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),
